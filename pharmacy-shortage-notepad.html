@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>كشكول النواقص – صيدلية السعد</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0d1117;--surface:#161b22;--card:#1c2230;--border:#2a3347;
+    --accent:#3b82f6;--accent2:#06b6d4;--green:#22c55e;--red:#ef4444;
+    --yellow:#f59e0b;--text:#e2e8f0;--muted:#64748b;--highlight:#1e3a5f;
+    --shadow:rgba(0,0,0,0.4);--glow1:rgba(59,130,246,0.06);--glow2:rgba(6,182,212,0.05);
+    --dup-bg:rgba(245,158,11,0.08);--dup-border:rgba(245,158,11,0.5);
+    --h1s:#e2e8f0;--h1e:#3b82f6;
+  }
+  body.light {
+    --bg:#f0f4f8;--surface:#fff;--card:#f8fafc;--border:#e2e8f0;
+    --accent:#2563eb;--accent2:#0891b2;--green:#16a34a;--red:#dc2626;
+    --yellow:#d97706;--text:#1e293b;--muted:#94a3b8;--highlight:#dbeafe;
+    --shadow:rgba(0,0,0,0.1);--glow1:rgba(37,99,235,0.04);--glow2:rgba(8,145,178,0.03);
+    --dup-bg:rgba(217,119,6,0.06);--dup-border:rgba(217,119,6,0.5);
+    --h1s:#1e293b;--h1e:#2563eb;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;direction:rtl;transition:background .35s,color .35s;}
+  body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 50%,var(--glow1) 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,var(--glow2) 0%,transparent 50%);pointer-events:none;z-index:0;}
+
+  /* SETUP OVERLAY */
+  .setup-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:1000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);}
+  .setup-box{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:32px;max-width:480px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.5);}
+  .setup-box h2{font-size:20px;font-weight:900;margin-bottom:8px;color:var(--text);}
+  .setup-box p{font-size:13px;color:var(--muted);font-family:'Tajawal',sans-serif;margin-bottom:24px;line-height:1.7;}
+  .setup-steps{text-align:right;margin-bottom:24px;}
+  .setup-step{display:flex;align-items:flex-start;gap:10px;margin-bottom:12px;font-size:13px;font-family:'Tajawal',sans-serif;color:var(--text);}
+  .step-num{background:var(--accent);color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px;}
+  .setup-input-group{display:flex;flex-direction:column;gap:6px;margin-bottom:16px;text-align:right;}
+  .setup-input-group label{font-size:12px;color:var(--muted);font-family:'Tajawal',sans-serif;}
+  .setup-input-group input{background:var(--card);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Cairo',sans-serif;font-size:14px;padding:10px 14px;outline:none;width:100%;direction:rtl;}
+  .setup-input-group input:focus{border-color:var(--accent);}
+  .btn-setup{background:linear-gradient(135deg,var(--accent),var(--accent2));color:white;border:none;border-radius:10px;padding:12px 28px;font-family:'Cairo',sans-serif;font-size:15px;font-weight:700;cursor:pointer;width:100%;transition:opacity .2s;}
+  .btn-setup:hover{opacity:.9;}
+  .setup-link{display:inline-block;margin-top:12px;font-size:12px;color:var(--accent);text-decoration:none;font-family:'Tajawal',sans-serif;}
+
+  /* SYNC STATUS */
+  .sync-bar{display:flex;align-items:center;gap:8px;font-size:12px;font-family:'Tajawal',sans-serif;padding:8px 14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:16px;transition:all .3s;}
+  .sync-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;transition:background .3s;}
+  .sync-bar.online .sync-dot{background:var(--green);box-shadow:0 0 6px var(--green);}
+  .sync-bar.offline .sync-dot{background:var(--red);}
+  .sync-bar.syncing .sync-dot{background:var(--yellow);animation:pulse .8s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+  .sync-reset{margin-right:auto;font-size:11px;color:var(--muted);cursor:pointer;text-decoration:underline;}
+  .sync-reset:hover{color:var(--red);}
+
+  /* THEME TOGGLE */
+  .theme-toggle{position:fixed;top:16px;left:16px;z-index:100;background:var(--surface);border:1px solid var(--border);border-radius:50px;padding:7px 14px;cursor:pointer;display:flex;align-items:center;gap:7px;font-family:'Tajawal',sans-serif;font-size:13px;color:var(--muted);transition:all .2s;box-shadow:0 2px 10px var(--shadow);}
+  .theme-toggle:hover{border-color:var(--accent);color:var(--accent);}
+  .theme-icon{font-size:16px;transition:transform .4s;}
+  .theme-toggle:hover .theme-icon{transform:rotate(20deg);}
+
+  .wrapper{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:20px 16px 60px;}
+  header{text-align:center;padding:32px 0 24px;}
+  .header-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.3);border-radius:50px;padding:6px 16px;font-size:12px;color:var(--accent2);margin-bottom:16px;}
+  header h1{font-size:clamp(22px,5vw,32px);font-weight:900;background:linear-gradient(135deg,var(--h1s) 30%,var(--h1e) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:6px;}
+  header p{color:var(--muted);font-size:13px;font-family:'Tajawal',sans-serif;}
+
+  .stats-bar{display:flex;gap:10px;margin:20px 0;flex-wrap:wrap;}
+  .stat-chip{flex:1;min-width:100px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;text-align:center;transition:border-color .2s,background .35s;}
+  .stat-chip:hover{border-color:var(--accent);}
+  .stat-num{font-size:22px;font-weight:700;display:block;line-height:1;margin-bottom:4px;}
+  .stat-label{font-size:11px;color:var(--muted);font-family:'Tajawal',sans-serif;}
+  .stat-chip.total .stat-num{color:var(--accent);}
+  .stat-chip.pending .stat-num{color:var(--yellow);}
+  .stat-chip.done .stat-num{color:var(--green);}
+
+  .add-section{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:20px;transition:border-color .3s,background .35s;}
+  .add-section:focus-within{border-color:rgba(59,130,246,0.5);box-shadow:0 0 0 3px rgba(59,130,246,0.08);}
+  .section-title{font-size:13px;font-weight:600;color:var(--muted);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+  .section-title::after{content:'';flex:1;height:1px;background:var(--border);}
+  .form-row{display:flex;gap:10px;flex-wrap:wrap;}
+  .input-group{flex:1;min-width:160px;display:flex;flex-direction:column;gap:6px;}
+  .input-group label{font-size:12px;color:var(--muted);font-family:'Tajawal',sans-serif;}
+  input[type="text"],input[type="number"],select{background:var(--card);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Cairo',sans-serif;font-size:14px;padding:10px 14px;outline:none;transition:border-color .2s,background .35s;direction:rtl;width:100%;}
+  input:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,130,246,0.1);}
+  select option{background:var(--card);color:var(--text);}
+
+  .autocomplete-wrap{position:relative;}
+  .autocomplete-list{position:absolute;top:calc(100% + 4px);right:0;left:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px var(--shadow);z-index:200;max-height:200px;overflow-y:auto;display:none;}
+  .autocomplete-list.open{display:block;}
+  .ac-item{padding:10px 14px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:background .15s;font-family:'Tajawal',sans-serif;}
+  .ac-item:hover{background:var(--highlight);}
+  .ac-name{flex:1;}
+  .ac-badge{font-size:11px;padding:2px 8px;border-radius:20px;background:rgba(245,158,11,0.15);color:var(--yellow);border:1px solid rgba(245,158,11,0.3);white-space:nowrap;}
+
+  .dup-warning{background:var(--dup-bg);border:1px solid var(--dup-border);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--yellow);font-family:'Tajawal',sans-serif;display:none;align-items:center;gap:8px;margin-top:8px;animation:fadeIn .25s ease;}
+  .dup-warning.show{display:flex;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(-4px);}to{opacity:1;transform:translateY(0);}}
+  .dup-warning button{background:rgba(245,158,11,0.2);border:1px solid var(--yellow);border-radius:6px;color:var(--yellow);font-family:'Cairo',sans-serif;font-size:12px;padding:3px 10px;cursor:pointer;white-space:nowrap;}
+  .dup-warning button:hover{background:rgba(245,158,11,0.35);}
+
+  .btn-add{background:linear-gradient(135deg,var(--accent),var(--accent2));color:white;border:none;border-radius:10px;padding:11px 22px;font-family:'Cairo',sans-serif;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;white-space:nowrap;transition:opacity .2s,transform .1s;align-self:flex-end;}
+  .btn-add:hover{opacity:.9;}
+  .btn-add:active{transform:scale(.97);}
+
+  .controls-row{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;align-items:center;}
+  .search-wrap{flex:1;min-width:180px;position:relative;}
+  .search-wrap input{padding-right:38px;}
+  .search-wrap .search-icon{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:16px;pointer-events:none;}
+  .filter-btns{display:flex;gap:6px;}
+  .filter-btn{background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--muted);font-family:'Cairo',sans-serif;font-size:12px;padding:8px 14px;cursor:pointer;transition:all .2s;white-space:nowrap;}
+  .filter-btn.active{background:var(--highlight);border-color:var(--accent);color:var(--accent);}
+
+  .items-list{display:flex;flex-direction:column;gap:8px;}
+  .item-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:12px;transition:all .25s;animation:slideIn .3s ease;position:relative;overflow:hidden;}
+  .item-card::before{content:'';position:absolute;right:0;top:0;bottom:0;width:3px;background:var(--accent);opacity:0;transition:opacity .2s;}
+  .item-card:hover{border-color:rgba(59,130,246,0.4);transform:translateX(-2px);}
+  .item-card:hover::before{opacity:1;}
+  .item-card.done{opacity:.55;}
+  .item-card.done::before{background:var(--green);opacity:1;}
+  .item-card.done .item-name{text-decoration:line-through;color:var(--muted);}
+  @keyframes slideIn{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:translateY(0);}}
+
+  .custom-check{width:22px;height:22px;border:2px solid var(--border);border-radius:6px;background:var(--card);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;font-size:13px;flex-shrink:0;}
+  .custom-check:hover{border-color:var(--green);}
+  .item-card.done .custom-check{background:var(--green);border-color:var(--green);color:white;}
+  .item-info{flex:1;min-width:0;}
+  .item-name{font-size:15px;font-weight:700;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .item-meta{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+  .meta-tag{font-size:11px;padding:2px 9px;border-radius:20px;font-family:'Tajawal',sans-serif;}
+  .tag-qty{background:rgba(59,130,246,0.15);color:#60a5fa;border:1px solid rgba(59,130,246,0.25);}
+  .tag-cat{background:rgba(6,182,212,0.1);color:#22d3ee;border:1px solid rgba(6,182,212,0.2);}
+  .tag-note{background:rgba(245,158,11,0.1);color:#fbbf24;border:1px solid rgba(245,158,11,0.2);max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .tag-by{background:rgba(139,92,246,0.1);color:#a78bfa;border:1px solid rgba(139,92,246,0.2);}
+  .item-date{font-size:11px;color:var(--muted);font-family:'Tajawal',sans-serif;white-space:nowrap;}
+  .item-actions{display:flex;gap:6px;flex-shrink:0;}
+  .btn-icon{width:32px;height:32px;background:var(--card);border:1px solid var(--border);border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .2s;color:var(--muted);}
+  .btn-icon:hover{border-color:var(--red);color:var(--red);}
+
+  .empty-state{text-align:center;padding:50px 20px;color:var(--muted);}
+  .empty-state .icon{font-size:48px;margin-bottom:14px;}
+  .empty-state p{font-size:14px;font-family:'Tajawal',sans-serif;}
+
+  .actions-row{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;}
+  .btn-secondary{background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Cairo',sans-serif;font-size:13px;padding:9px 16px;cursor:pointer;display:flex;align-items:center;gap:7px;transition:all .2s;}
+  .btn-secondary:hover{border-color:var(--accent);color:var(--accent);}
+  .btn-danger{border-color:rgba(239,68,68,0.3);color:var(--red);}
+  .btn-danger:hover{border-color:var(--red);background:rgba(239,68,68,0.08);}
+
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 22px;font-size:14px;font-family:'Tajawal',sans-serif;transition:transform .35s cubic-bezier(.34,1.56,.64,1),background .35s;z-index:999;white-space:nowrap;box-shadow:0 8px 32px var(--shadow);}
+  .toast.show{transform:translateX(-50%) translateY(0);}
+
+  @media print{
+    body{background:white!important;color:#111!important;}
+    body::before,.theme-toggle,.add-section,.controls-row,.actions-row,.btn-icon,.stats-bar,.sync-bar{display:none!important;}
+    .item-card{border:1px solid #ddd!important;background:white!important;break-inside:avoid;}
+    .item-card::before{display:none;}
+    header h1{-webkit-text-fill-color:#111!important;}
+    .meta-tag{border:1px solid #ccc!important;color:#333!important;background:#f5f5f5!important;}
+  }
+  @media(max-width:600px){
+    .form-row{flex-direction:column;}
+    .btn-add{width:100%;justify-content:center;}
+    .stats-bar{gap:8px;}
+    .stat-chip{padding:10px;}
+    .stat-num{font-size:18px;}
+  }
+</style>
+</head>
+<body>
+
+<!-- SETUP OVERLAY -->
+<div class="setup-overlay" id="setup-overlay">
+  <div class="setup-box">
+    <div style="font-size:40px;margin-bottom:12px;">🔗</div>
+    <h2>ربط الكشكول بالسحابة</h2>
+    <p>عشان كل الصيادلة يشوفوا نفس البيانات، محتاج تعمل قاعدة بيانات مجانية على Firebase ثم تحط الرابط هنا.</p>
+    <div class="setup-steps">
+      <div class="setup-step">
+        <div class="step-num">1</div>
+        <span>روح على <strong>console.firebase.google.com</strong> وسجّل بحسابك على Google</span>
+      </div>
+      <div class="setup-step">
+        <div class="step-num">2</div>
+        <span>اعمل Project جديد (اسمه مثلاً: saad-pharmacy)</span>
+      </div>
+      <div class="setup-step">
+        <div class="step-num">3</div>
+        <span>من القائمة اختر <strong>Realtime Database</strong> ← Create database ← Start in test mode</span>
+      </div>
+      <div class="setup-step">
+        <div class="step-num">4</div>
+        <span>انسخ الرابط اللي هيظهر (شكله: <em>https://xxx-default-rtdb.firebaseio.com</em>) والصقه هنا</span>
+      </div>
+    </div>
+    <div class="setup-input-group">
+      <label>رابط Firebase Database URL</label>
+      <input type="text" id="firebase-url-input" placeholder="https://your-project-default-rtdb.firebaseio.com" dir="ltr" />
+    </div>
+    <div class="setup-input-group">
+      <label>اسمك (عشان يظهر مين أضاف الصنف)</label>
+      <input type="text" id="user-name-input" placeholder="مثال: د. إيمان" />
+    </div>
+    <button class="btn-setup" onclick="saveSetup()">🚀 ابدأ المزامنة</button>
+    <br>
+    <a href="https://console.firebase.google.com" target="_blank" class="setup-link">↗ فتح Firebase Console</a>
+  </div>
+</div>
+
+<!-- Theme Toggle -->
+<button class="theme-toggle" onclick="toggleTheme()">
+  <span class="theme-icon" id="theme-icon">☀️</span>
+  <span id="theme-label">وضع النهار</span>
+</button>
+
+<div class="wrapper">
+  <header>
+    <div class="header-badge">💊 صيدلية السعد</div>
+    <h1>كشكول النواقص</h1>
+    <p>مزامنة فورية بين جميع الأجهزة</p>
+  </header>
+
+  <!-- Sync Status -->
+  <div class="sync-bar syncing" id="sync-bar">
+    <div class="sync-dot"></div>
+    <span id="sync-text">جاري الاتصال...</span>
+    <span class="sync-reset" onclick="resetSetup()">تغيير إعدادات الاتصال</span>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-bar">
+    <div class="stat-chip total"><span class="stat-num" id="stat-total">0</span><span class="stat-label">إجمالي النواقص</span></div>
+    <div class="stat-chip pending"><span class="stat-num" id="stat-pending">0</span><span class="stat-label">لم يُطلب بعد</span></div>
+    <div class="stat-chip done"><span class="stat-num" id="stat-done">0</span><span class="stat-label">تم الطلب ✓</span></div>
+  </div>
+
+  <!-- Add form -->
+  <div class="add-section">
+    <div class="section-title">➕ إضافة صنف ناقص</div>
+    <div class="form-row">
+      <div class="input-group" style="flex:2;min-width:200px;">
+        <label>اسم الصنف</label>
+        <div class="autocomplete-wrap">
+          <input type="text" id="inp-name" placeholder="مثال: أموكسيسيلين 500 مجم..." oninput="onNameInput()" onkeydown="onNameKey(event)" autocomplete="off"/>
+          <div class="autocomplete-list" id="ac-list"></div>
+        </div>
+        <div class="dup-warning" id="dup-warning">
+          <span>⚠️</span>
+          <span id="dup-msg" style="flex:1"></span>
+          <button onclick="scrollToDuplicate()">عرض الصنف</button>
+        </div>
+      </div>
+      <div class="input-group" style="flex:1;min-width:100px;">
+        <label>الكمية المطلوبة</label>
+        <input type="number" id="inp-qty" placeholder="عدد" min="1"/>
+      </div>
+      <div class="input-group" style="flex:1;min-width:130px;">
+        <label>التصنيف</label>
+        <select id="inp-cat">
+          <option value="">— اختر —</option>
+          <option value="أدوية">💊 أدوية</option>
+          <option value="مستلزمات">🩺 مستلزمات</option>
+          <option value="مستحضرات تجميل">💄 تجميل</option>
+          <option value="مكملات غذائية">🌿 مكملات</option>
+          <option value="أطفال">👶 أطفال</option>
+          <option value="حقن وأمصال">💉 حقن</option>
+          <option value="أخرى">📦 أخرى</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row" style="margin-top:10px;">
+      <div class="input-group" style="flex:3;">
+        <label>ملاحظة (اختياري)</label>
+        <input type="text" id="inp-note" placeholder="مثال: بديل مقبول، أولوية عالية..."/>
+      </div>
+      <button class="btn-add" onclick="addItem()">＋ أضف للكشكول</button>
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls-row">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="search-inp" placeholder="ابحث عن صنف..." oninput="renderList()"/>
+    </div>
+    <div class="filter-btns">
+      <button class="filter-btn active" onclick="setFilter('all',this)">الكل</button>
+      <button class="filter-btn" onclick="setFilter('pending',this)">ناقص</button>
+      <button class="filter-btn" onclick="setFilter('done',this)">تم الطلب</button>
+    </div>
+  </div>
+
+  <div class="actions-row">
+    <button class="btn-secondary" onclick="window.print()">🖨️ طباعة</button>
+    <button class="btn-secondary" onclick="exportCSV()">📥 تصدير CSV</button>
+    <button class="btn-secondary btn-danger" onclick="clearDone()">🗑️ حذف المطلوبة</button>
+  </div>
+
+  <div class="items-list" id="items-list"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
+<script>
+/* ======== CONFIG ======== */
+let DB_URL    = localStorage.getItem('fb-url') || '';
+let USER_NAME = localStorage.getItem('fb-user') || '';
+let db = null;
+let items = {};       // keyed by Firebase push-key
+let currentFilter = 'all';
+let dupKey = null;
+let acIndex = -1;
+
+/* ======== THEME ======== */
+if (localStorage.getItem('saad-theme') === 'light') applyLight();
+function applyLight(){ document.body.classList.add('light'); document.getElementById('theme-icon').textContent='🌙'; document.getElementById('theme-label').textContent='وضع الليل'; }
+function applyDark() { document.body.classList.remove('light'); document.getElementById('theme-icon').textContent='☀️'; document.getElementById('theme-label').textContent='وضع النهار'; }
+function toggleTheme(){ const l=document.body.classList.contains('light'); if(l){applyDark();localStorage.setItem('saad-theme','dark');}else{applyLight();localStorage.setItem('saad-theme','light');} }
+
+/* ======== SETUP ======== */
+function saveSetup(){
+  const url  = document.getElementById('firebase-url-input').value.trim().replace(/\/$/,'');
+  const name = document.getElementById('user-name-input').value.trim();
+  if(!url || !url.startsWith('https://')){ showToast('⚠️ الرابط غلط — تأكد منه'); return; }
+  if(!name){ showToast('⚠️ اكتب اسمك أولاً'); return; }
+  localStorage.setItem('fb-url', url);
+  localStorage.setItem('fb-user', name);
+  DB_URL = url; USER_NAME = name;
+  document.getElementById('setup-overlay').style.display = 'none';
+  initFirebase();
+}
+
+function resetSetup(){
+  if(!confirm('هتقطع الاتصال وترجع لشاشة الإعداد — مؤكد؟')) return;
+  localStorage.removeItem('fb-url');
+  localStorage.removeItem('fb-user');
+  location.reload();
+}
+
+/* ======== FIREBASE INIT ======== */
+function initFirebase(){
+  try {
+    const app = firebase.initializeApp({ databaseURL: DB_URL }, 'saad');
+    db = firebase.database(app);
+    setSyncStatus('syncing', 'جاري الاتصال...');
+
+    const ref = db.ref('shortages');
+
+    // Real-time listener
+    ref.on('value', snap => {
+      items = snap.val() || {};
+      renderList();
+      updateStats();
+      setSyncStatus('online', 'متصل — مزامنة فورية ✓');
+    }, err => {
+      setSyncStatus('offline', 'خطأ في الاتصال: ' + err.message);
+    });
+
+    // Connection state
+    db.ref('.info/connected').on('value', snap => {
+      if(snap.val()) setSyncStatus('online','متصل — مزامنة فورية ✓');
+      else setSyncStatus('offline','غير متصل — تحقق من الإنترنت');
+    });
+
+  } catch(e) {
+    setSyncStatus('offline','خطأ: ' + e.message);
+    showToast('❌ فيه مشكلة في رابط Firebase');
+  }
+}
+
+function setSyncStatus(state, msg){
+  const bar = document.getElementById('sync-bar');
+  bar.className = 'sync-bar ' + state;
+  document.getElementById('sync-text').textContent = msg;
+}
+
+/* ======== CRUD ======== */
+async function addItem(){
+  if(!db){ showToast('⚠️ لم يتم الاتصال بعد'); return; }
+  const name = document.getElementById('inp-name').value.trim();
+  const qty  = document.getElementById('inp-qty').value.trim();
+  const cat  = document.getElementById('inp-cat').value;
+  const note = document.getElementById('inp-note').value.trim();
+  if(!name){ showToast('⚠️ اكتب اسم الصنف أولاً'); return; }
+  if(findDuplicate(name)){ showToast('⚠️ الصنف موجود بالفعل!'); scrollToDuplicate(); return; }
+
+  setSyncStatus('syncing','جاري الحفظ...');
+  try {
+    await db.ref('shortages').push({
+      name, qty: qty||'—', cat: cat||'أخرى', note: note||'',
+      done: false, addedBy: USER_NAME,
+      date: new Date().toLocaleDateString('ar-EG',{day:'2-digit',month:'2-digit',year:'numeric'}),
+      ts: Date.now()
+    });
+    clearForm();
+    showToast('✅ تمت الإضافة');
+  } catch(e){ showToast('❌ فشل الحفظ: '+e.message); }
+}
+
+async function toggleDone(key){
+  if(!db) return;
+  const item = items[key];
+  if(!item) return;
+  try {
+    await db.ref('shortages/'+key).update({ done: !item.done });
+    showToast(item.done ? '↩️ أُعيد للنواقص' : '✅ تم الطلب');
+  } catch(e){ showToast('❌ '+e.message); }
+}
+
+async function deleteItem(key){
+  if(!db) return;
+  try {
+    await db.ref('shortages/'+key).remove();
+    showToast('🗑️ تم الحذف');
+  } catch(e){ showToast('❌ '+e.message); }
+}
+
+async function clearDone(){
+  const doneKeys = Object.keys(items).filter(k=>items[k].done);
+  if(!doneKeys.length){ showToast('لا توجد أصناف مطلوبة'); return; }
+  if(!confirm(`هتحذف ${doneKeys.length} صنف تم طلبهم — مؤكد؟`)) return;
+  const updates = {};
+  doneKeys.forEach(k => updates['shortages/'+k] = null);
+  try {
+    await db.ref().update(updates);
+    showToast(`🗑️ تم حذف ${doneKeys.length} صنف`);
+  } catch(e){ showToast('❌ '+e.message); }
+}
+
+/* ======== DUPLICATE ======== */
+function normalize(s){ return s.trim().replace(/[أإآا]/g,'ا').replace(/[ةه]/g,'ه').replace(/[يى]/g,'ي').replace(/\s+/g,' ').toLowerCase(); }
+function findDuplicate(name){
+  if(!name) return null;
+  const n = normalize(name);
+  const key = Object.keys(items).find(k => normalize(items[k].name) === n);
+  return key ? {key, ...items[key]} : null;
+}
+
+function onNameInput(){
+  const val = document.getElementById('inp-name').value;
+  checkDuplicate(val); showAutocomplete(val);
+}
+
+function checkDuplicate(val){
+  const dup = findDuplicate(val);
+  dupKey = dup ? dup.key : null;
+  const w = document.getElementById('dup-warning');
+  if(dup){
+    document.getElementById('dup-msg').textContent = `"${dup.name}" موجود بالفعل (${dup.done?'تم الطلب':'ناقص'}) — أضافه ${dup.addedBy||'شخص ما'}`;
+    w.classList.add('show');
+  } else { w.classList.remove('show'); }
+}
+
+function scrollToDuplicate(){
+  if(!dupKey) return;
+  currentFilter='all';
+  document.querySelectorAll('.filter-btn').forEach((b,i)=>b.classList.toggle('active',i===0));
+  renderList();
+  setTimeout(()=>{
+    const el = document.getElementById('card-'+dupKey);
+    if(el){ el.scrollIntoView({behavior:'smooth',block:'center'}); el.style.outline='2px solid var(--yellow)'; setTimeout(()=>el.style.outline='',2000); }
+  },100);
+}
+
+/* ======== AUTOCOMPLETE ======== */
+function showAutocomplete(val){
+  const list = document.getElementById('ac-list');
+  if(!val){ list.classList.remove('open'); return; }
+  const n = normalize(val);
+  const matches = Object.entries(items).filter(([,i])=>normalize(i.name).includes(n)).slice(0,6);
+  if(!matches.length){ list.classList.remove('open'); return; }
+  list.innerHTML = matches.map(([key,item],idx)=>`
+    <div class="ac-item" data-idx="${idx}" onmousedown="pickAC('${item.name.replace(/'/g,"\\'")}')">
+      <span class="ac-name">${item.name}</span>
+      <span class="ac-badge">${item.done?'✅ تم الطلب':'⏳ ناقص'}</span>
+    </div>`).join('');
+  acIndex=-1; list.classList.add('open');
+}
+
+function pickAC(name){ document.getElementById('inp-name').value=name; document.getElementById('ac-list').classList.remove('open'); checkDuplicate(name); }
+
+function onNameKey(e){
+  const list=document.getElementById('ac-list');
+  const rows=list.querySelectorAll('.ac-item');
+  if(!list.classList.contains('open')) return;
+  if(e.key==='ArrowDown'){e.preventDefault();acIndex=Math.min(acIndex+1,rows.length-1);}
+  else if(e.key==='ArrowUp'){e.preventDefault();acIndex=Math.max(acIndex-1,-1);}
+  else if(e.key==='Enter'&&acIndex>=0){e.preventDefault();e.stopPropagation();rows[acIndex].dispatchEvent(new MouseEvent('mousedown'));return;}
+  else if(e.key==='Escape'){list.classList.remove('open');return;}
+  rows.forEach((r,i)=>r.style.background=i===acIndex?'var(--highlight)':'');
+}
+
+document.addEventListener('click',e=>{ if(!e.target.closest('.autocomplete-wrap')) document.getElementById('ac-list').classList.remove('open'); });
+
+/* ======== RENDER ======== */
+function setFilter(f,btn){ currentFilter=f; document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); renderList(); }
+
+function renderList(){
+  const q = document.getElementById('search-inp').value.trim().toLowerCase();
+  let entries = Object.entries(items).sort((a,b)=>(b[1].ts||0)-(a[1].ts||0));
+  if(currentFilter==='pending') entries=entries.filter(([,i])=>!i.done);
+  if(currentFilter==='done')    entries=entries.filter(([,i])=>i.done);
+  if(q) entries=entries.filter(([,i])=>
+    i.name.toLowerCase().includes(q)||i.cat.toLowerCase().includes(q)||(i.note&&i.note.toLowerCase().includes(q))
+  );
+
+  const list=document.getElementById('items-list');
+  if(!entries.length){
+    list.innerHTML=`<div class="empty-state"><div class="icon">📋</div><p>${Object.keys(items).length===0?'الكشكول فاضي — ابدأ بإضافة أصناف ناقصة':'لا توجد نتائج مطابقة'}</p></div>`;
+    return;
+  }
+
+  list.innerHTML=entries.map(([key,item])=>`
+    <div class="item-card ${item.done?'done':''}" id="card-${key}">
+      <div class="custom-check" onclick="toggleDone('${key}')" title="${item.done?'إلغاء':'تم الطلب'}">${item.done?'✓':''}</div>
+      <div class="item-info">
+        <div class="item-name">${item.name}</div>
+        <div class="item-meta">
+          <span class="meta-tag tag-qty">🔢 ${item.qty}</span>
+          ${item.cat?`<span class="meta-tag tag-cat">${item.cat}</span>`:''}
+          ${item.addedBy?`<span class="meta-tag tag-by">👤 ${item.addedBy}</span>`:''}
+          ${item.note?`<span class="meta-tag tag-note" title="${item.note}">📝 ${item.note}</span>`:''}
+        </div>
+      </div>
+      <div class="item-date">${item.date}</div>
+      <div class="item-actions">
+        <button class="btn-icon" onclick="deleteItem('${key}')" title="حذف">✕</button>
+      </div>
+    </div>`).join('');
+}
+
+function updateStats(){
+  const vals=Object.values(items);
+  const total=vals.length, done=vals.filter(i=>i.done).length;
+  document.getElementById('stat-total').textContent=total;
+  document.getElementById('stat-pending').textContent=total-done;
+  document.getElementById('stat-done').textContent=done;
+}
+
+/* ======== HELPERS ======== */
+function clearForm(){
+  ['inp-name','inp-qty','inp-note'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('inp-cat').value='';
+  document.getElementById('dup-warning').classList.remove('show');
+  document.getElementById('ac-list').classList.remove('open');
+  document.getElementById('inp-name').focus();
+}
+
+function exportCSV(){
+  const vals=Object.values(items);
+  if(!vals.length){showToast('الكشكول فاضي!');return;}
+  const header='الصنف,الكمية,التصنيف,ملاحظة,أضافه,الحالة,التاريخ\n';
+  const rows=vals.map(i=>`"${i.name}","${i.qty}","${i.cat}","${i.note||''}","${i.addedBy||''}","${i.done?'تم الطلب':'ناقص'}","${i.date}"`).join('\n');
+  const blob=new Blob(['\uFEFF'+header+rows],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download=`نواقص-صيدلية-السعد-${new Date().toLocaleDateString('ar-EG')}.csv`;a.click();
+  showToast('📥 تم التصدير');
+}
+
+function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500); }
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&['inp-qty','inp-cat','inp-note'].includes(e.target.id)) addItem();
+  if(e.key==='Enter'&&e.target.id==='inp-name'){ const l=document.getElementById('ac-list'); if(!l.classList.contains('open')) addItem(); }
+});
+
+/* ======== BOOT ======== */
+if(DB_URL && USER_NAME){
+  document.getElementById('setup-overlay').style.display='none';
+  initFirebase();
+} else {
+  // pre-fill if partial
+  if(DB_URL) document.getElementById('firebase-url-input').value=DB_URL;
+  if(USER_NAME) document.getElementById('user-name-input').value=USER_NAME;
+}
+</script>
+</body>
+</html>
